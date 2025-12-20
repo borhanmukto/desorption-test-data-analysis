@@ -20,7 +20,7 @@ Before running this application, ensure you have **Python (version 3.8 or higher
     
     *   Create a new folder on your computer (e.g., DataAnalyzer).
         
-    *   Save the Python script provided in this package inside that folder as **analyzer.py**.
+    *   Save the Python script provided in this package inside that folder as **app.py**.
         
 2.  Bash`pip install streamlit pandas openpyxl xlsxwriter`⚠️ If the command above fails (Command not found)If you see an error saying 'pip' is not recognized, it means Python was not added to your system PATH. Use this command instead:Bash`py -m pip install streamlit pandas openpyxl xlsxwriter`
     
@@ -38,7 +38,7 @@ Before running this application, ensure you have **Python (version 3.8 or higher
     
 2.  Navigate to the folder where you saved analyzer.py.
     
-3.  Bash`streamlit run analyzer.py`⚠️ If the command above failsIf your computer does not recognize streamlit, use the Python launcher directly:Bash`py -m streamlit run analyzer.py`
+3.  Bash`streamlit run app.py`⚠️ If the command above failsIf your computer does not recognize streamlit, use the Python launcher directly:Bash`py -m streamlit run app.py`
     
 4.  A new tab should automatically open in your default web browser.
     
