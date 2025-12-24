@@ -42,8 +42,8 @@ st.markdown("<h1 style='text-align: center;'>📊 Desorption Test Data Analysis 
 # Centered Developer Credit & LinkedIn Link
 st.markdown("<div style='text-align: center; color: grey; font-size: small; margin-top: -10px; margin-bottom: 20px;'>Developed by Borhan Uddin Rabbani || <a href='https://www.linkedin.com/in/borhan-uddin-rabbani/' target='_blank'>Connect on LinkedIn</a></div>", unsafe_allow_html=True)
 
-# Centered Instruction Text
-st.markdown("<p style='text-align: center;'>Upload your Excel file to clean, average, and consolidate data.</p>", unsafe_allow_html=True)
+# Centered Instruction Text (UPDATED TEXT)
+st.markdown("<p style='text-align: center;'>Upload your CSV file to clean, average, and consolidate data.</p>", unsafe_allow_html=True)
 
 # --- SIDEBAR CONFIGURATION ---
 st.sidebar.header("Configuration")
@@ -57,8 +57,8 @@ time_to_average_sec = st.sidebar.number_input(
     help="The time window to group and average data points."
 )
 
-# 2. User Input: File Upload
-uploaded_file = st.sidebar.file_uploader("Upload Excel File", type=["xlsx", "xls"])
+# 2. User Input: File Upload (UPDATED TO CSV)
+uploaded_file = st.sidebar.file_uploader("Upload CSV File", type=["csv"])
 
 resample_freq = f"{time_to_average_sec}s"
 
@@ -72,41 +72,33 @@ if uploaded_file is not None:
         progress_bar = st.progress(0)
         
         try:
-            status_text.text("Reading Excel file... (This may take a moment for large files)")
-            # Load all sheets
-            sheets = pd.read_excel(uploaded_file, sheet_name=None, dtype=str, engine="openpyxl")
+            status_text.text("Reading CSV file... (This may take a moment for large files)")
+            
+            # UPDATED: Read CSV instead of Excel
+            # We assume standard comma separation. If your CSVs use semicolons, add sep=';'
+            df = pd.read_csv(uploaded_file)
             
             all_processed_data = []
-            total_sheets = len(sheets)
             
-            # Iterate through sheets
-            for i, (sheet_name, df) in enumerate(sheets.items()):
-                # Update progress
-                progress = (i + 1) / total_sheets
-                progress_bar.progress(progress)
-                status_text.text(f"Processing sheet: {sheet_name}...")
-                
-                df = df.copy()
-                
-                # Identify columns
-                ts_col, resp_col = find_columns(df)
-                
-                # --- FILTERING GARBAGE DATA ---
-                garbage_keywords = "Balance|OHAUS|User|Project|Weighing|Gross|Net|Tare|/"
-                mask_garbage = df[resp_col].astype(str).str.contains(garbage_keywords, case=False, na=False, regex=True)
-                df = df[~mask_garbage].copy()
-                
-                # Convert Timestamp and Values
-                df["Timestamp"] = pd.to_datetime(df[ts_col], errors="coerce")
-                df["Value"] = numeric_from_response(df[resp_col])
-                
-                # Drop invalid rows
-                df = df.dropna(subset=["Timestamp", "Value"]).copy()
-                
-                if df.empty:
-                    st.warning(f"Sheet '{sheet_name}' resulted in no valid data. Skipping.")
-                    continue
-                
+            # Since CSV has no sheets, we treat the whole file as one block
+            # Identify columns
+            ts_col, resp_col = find_columns(df)
+            
+            # --- FILTERING GARBAGE DATA ---
+            garbage_keywords = "Balance|OHAUS|User|Project|Weighing|Gross|Net|Tare|/"
+            mask_garbage = df[resp_col].astype(str).str.contains(garbage_keywords, case=False, na=False, regex=True)
+            df = df[~mask_garbage].copy()
+            
+            # Convert Timestamp and Values
+            df["Timestamp"] = pd.to_datetime(df[ts_col], errors="coerce")
+            df["Value"] = numeric_from_response(df[resp_col])
+            
+            # Drop invalid rows
+            df = df.dropna(subset=["Timestamp", "Value"]).copy()
+            
+            if df.empty:
+                st.warning("The CSV file resulted in no valid data after cleaning.")
+            else:
                 # Resample Logic
                 df = df.set_index("Timestamp").sort_index()
                 avg_data = df["Value"].resample(resample_freq).mean().to_frame(name="Value_avg")
@@ -118,9 +110,14 @@ if uploaded_file is not None:
                 
                 # Final formatting
                 out_sheet = avg_data.reset_index()
-                out_sheet["Source_Sheet"] = sheet_name
+                # Use filename as source since there are no sheet names
+                out_sheet["Source_Sheet"] = uploaded_file.name 
                 all_processed_data.append(out_sheet)
-            
+                
+                # Update progress to 100%
+                progress_bar.progress(1.0)
+                status_text.text("Processing complete.")
+
             # --- FINAL OUTPUT GENERATION ---
             if all_processed_data:
                 final_df = pd.concat(all_processed_data, ignore_index=True)
@@ -154,4 +151,4 @@ if uploaded_file is not None:
         except Exception as e:
             st.error(f"An error occurred: {e}")
 else:
-    st.info("Please upload a file in the sidebar to begin.")
+    st.info("Please upload a CSV file in the sidebar to begin.")
