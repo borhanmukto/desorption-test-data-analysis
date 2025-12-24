@@ -1,6 +1,9 @@
 📊 Desorption Test Data Analysis Tool
 =====================================
 
+<img width="1913" height="923" alt="image" src="https://github.com/user-attachments/assets/3599678b-dd79-4dd9-9b77-8da6d3f20b77" />
+
+
 This application is a post-processing tool designed to clean, consolidate, and average raw data collected from Ohaus scales (or similar devices). It takes raw Excel files—often containing multiple sheets and "garbage" text (like "Tare", "Gross", etc.)—and outputs a clean, time-averaged dataset ready for analysis.
 
 📋 Prerequisites
